@@ -27,28 +27,45 @@ class Img2MIDI:
                     self.b, self.g, self.r = cv2.split(image)
                     self.valid = True
                     print(f'Image is {width}px by {height}px')
+                    self.getMidi()
                 else:
                     print("Image does not contain RGB Values")
 
 
     def getMidi(self):
-        if self.valid:
-            #select instrument based on blue (B)
-            port = mido.open_output("Output port 1")
-            progNum = GET INSTRUMENT HERE FROM BLUE ARRAY
+        
+           
+        count = 0
+        while count < len(self.b):
+            
+            #select instrument based on blue
+            curPro = self.b[count]
+            if (curPro > 1):
+                progNum = (curPro - 1) / 2
+                self.track.append(Message('program_change', program=progNum))
 
-            #select velocity based on blue values(B)
-            velocity = GET VELOCITY HERE FROM BLUE VALUES
+                #select velocity based on green
+                curVel = self.g[count]
+                if (curVel > 1):
+                    velocity = (curVel - 1) / 2
 
-            #select note based on green (G)
-            noteOn = Message("note_on", note = #note here#)
+
+                    #select note based on red
+                    curNote = self.r[count]
+                    if (curNote > 1):
+                        note = (curNote - 1) / 2
+                        self.track.append(Message("note_on", note = note, velocity = velocity, time = self.time))
                              
-            #increment time
-            self.time += random.randint(1,500)
-            noteOff = Message("note_off", note = #same note here)
+                        #increment time
+                        self.time += random.randint(1,500)
+                        self.track.append(Message("note_off", note = note, velocity = velocity, time = self.time))
+
+        #generate file
+        self.mid.save('result.mid')
                              
             
 
-filename = input("Enter image path here: ")
+filename = "sunflower.jpg" #input("Enter image path here: ")
 analyzer = Img2MIDI(filename)
-analyzer.analyse()
+analyzer.analyze()
+
